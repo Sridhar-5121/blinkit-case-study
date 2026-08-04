@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voice Miner — Blinkit Review Discovery Engine</title>
+<style>
+:root{--g:#06400F;--g2:#0A5C18;--y:#F8CB46;--ink:#1F2430;--mut:#7A867E;--bg:#F6F7F4;--red:#B4452F;--ok:#0C831F;--amb:#8A6D00;--blu:#2F3C7E;--teal:#028090}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:60px}
+.hero{background:var(--g);padding:20px 16px}
+.mx{max-width:820px;margin:0 auto}
+.k{color:var(--y);font-size:11px;font-weight:800;letter-spacing:2px}
+h1{color:#fff;font-size:22px;margin-top:4px}
+.sub{color:#C9DAD0;font-size:13px;margin-top:4px}
+main{max-width:820px;margin:0 auto;padding:0 16px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.tab{border:0;padding:8px 14px;border-radius:99px;font-size:12.5px;font-weight:800;cursor:pointer;background:#E7ECE7;color:#3B4A42}
+.tab.on{background:var(--g);color:var(--y)}
+.card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:12px}
+.hd{font-weight:800;color:var(--g)}
+.mut{font-size:11.5px;color:var(--mut)}
+.trow{margin:10px 0;cursor:pointer}
+.trow .l{display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px}
+.trow .l b{font-weight:800}
+.bar{height:11px;border-radius:99px;background:#EDF1ED;overflow:hidden}.bar i{display:block;height:100%;border-radius:99px;transition:width .3s}
+.pill{display:inline-block;color:#fff;font-size:10.5px;font-weight:800;border-radius:99px;padding:2px 9px}
+.rec{background:#fff;border-radius:14px;padding:13px 15px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:10px}
+.rec p{font-size:13px;margin-top:6px}
+.rec .src{font-size:11.5px;margin-top:6px}
+.rec .src a{color:var(--ok);font-weight:700}
+textarea,input[type=text]{width:100%;border:1px solid #D6DED6;border-radius:12px;padding:10px 12px;font-size:13px;font-family:inherit;outline:none}
+.ybtn{border:0;background:var(--y);color:var(--g);font-weight:800;font-size:13px;padding:9px 16px;border-radius:12px;cursor:pointer;margin-top:10px}
+.gbtn{border:0;background:var(--g);color:var(--y);font-weight:800;font-size:13px;padding:9px 16px;border-radius:12px;cursor:pointer}
+.note{background:#FDF3CF;border-radius:12px;padding:10px 14px;font-size:12.5px;margin-top:12px}
+.ans{background:#EAF3EC;border-radius:12px;padding:12px 14px;font-size:13px;margin-top:12px;white-space:pre-wrap}
+.foot{color:var(--mut);font-size:11.5px;line-height:1.5;margin-top:8px;font-style:italic}
+.clr{margin-bottom:10px}
+.hide{display:none!important}
+</style></head><body>
+<div class="hero"><div class="mx">
+<div class="k">PART 1 · REVIEW-MINING DISCOVERY ENGINE</div>
+<h1>Blinkit Voice Miner</h1>
+<div class="sub" id="subline"></div>
+</div></div>
+<main>
+<div class="tabs">
+<button class="tab on" data-v="dash">📊 Theme dashboard</button>
+<button class="tab" data-v="corpus">🗂 Evidence corpus</button>
+<button class="tab" data-v="cls">⚡ Classify new reviews</button>
+<button class="tab" data-v="ask">💬 Search the evidence</button>
+</div>
+<section id="v-dash"></section>
+<section id="v-corpus" class="hide"></section>
+<section id="v-cls" class="hide">
+<div class="card"><div class="hd">Paste reviews — one per line</div>
+<div class="mut" style="margin:4px 0 10px">The classifier tags each line into a theme and adds it to the corpus. At production scale this step runs on scraper feeds (Play Store / App Store / Reddit) on a cron.</div>
+<textarea id="pasteBox" rows="6" placeholder="App is great for milk and eggs but I would never order fruits, they send old stock
+Ordered a face wash on a whim, came fresh, pleasantly surprised
+Delivery fee + handling fee + surge makes small orders pointless"></textarea>
+<button class="ybtn" onclick="classify()">⚡ Classify</button></div>
+</section>
+<section id="v-ask" class="hide">
+<div class="card"><div class="hd">Ask a research question</div>
+<div class="mut" style="margin:4px 0 10px">Evidence search: the engine surfaces the corpus records most relevant to your question, cited by ID — answers stay grounded in the evidence, never beyond it.</div>
+<div style="display:flex;gap:8px"><input type="text" id="qBox" placeholder="e.g. What blocks users from trying beauty products on Blinkit?" onkeydown="if(event.key==='Enter')ask()"><button class="gbtn" onclick="ask()">Search</button></div>
+<div id="ansBox"></div></div>
+</section>
+<div class="foot">Methodology: the corpus combines two independent methods: 29 records hand-gathered from public sources (consumer courts, ConsumerComplaints, MouthShut, Trustpilot, PissedConsumer, App Store reviews, FSSAI reporting, and Eternal / Redseer / Mordor / Bain disclosures) and 14 verified primary-survey respondents recruited with consent in August 2026 (S01–S14, reported anonymised) in August 2026, paraphrased and tagged; every seed record links to its source. This portable demo runs classification and evidence search on-device; the production architecture in the case study uses an LLM for both steps.</div>
+</main>
+<script>
+const THEMES={TRUST:["Trust deficit (expiry · quality · returns · authenticity)","#B4452F"],MISSION:["Mission-mode & habit loop","#06400F"],PRICE:["Price & fee anxiety","#8A6D00"],BREAKOUT:["Category breakout proof & opportunity","#0C831F"],BUSINESS:["Business imperative (margin & AOV)","#2F3C7E"],POSITIVE:["Convenience delight","#028090"]};
+const SEED=[
+["R01","User voice · Jan 2026","TRUST","Customer received a drinking powder expiring in 4 days plus items \u201ccovered with filth\u201d, including a product bought for a newborn; promised refund never arrived and support stopped engaging.","Consumer Court Advisor","https://consumercourt.net/threads/expiry-and-unhygienic-product-delivery.4227/"],
+["R02","User voice · Mar 2026","TRUST","Order included a chicken pack already past its printed expiry at the moment of delivery (expiry 28 Mar, delivered 29 Mar).","Consumer Court — Blinkit tag","https://consumercourt.net/tags/blinkit/"],
+["R03","User voice · Apr 2026","TRUST","Formal complaint against Blinkit and an ayurvedic manufacturer for a defective and misleading product.","Consumer Court — Blinkit tag","https://consumercourt.net/tags/blinkit/"],
+["R04","User voice · 2026","TRUST","Customer ordering AirPods refused the open-box delivery, suspecting the product's authenticity.","Consumer Court — Blinkit tag","https://consumercourt.net/tags/blinkit/"],
+["R05","User voice · 2026","TRUST","\u20b91,600 paid for a cancelled bag order; the promised 7-day refund had not arrived after 11 days.","Consumer Court — Blinkit tag","https://consumercourt.net/tags/blinkit/"],
+["R06","User voice · 2026","TRUST","App Store reviewer: no proper return/replacement path in-app, slow support, \u201cno accountability once the order is delivered\u201d.","Apple App Store — Blinkit","https://apps.apple.com/us/app/-/id960335206"],
+["R07","User voice · 2026","POSITIVE","App Store reviewer (expat in India) praises the service, range and convenience.","Apple App Store — Blinkit","https://apps.apple.com/us/app/-/id960335206"],
+["R08","User voice · Jul 2025","PRICE","Reader comment: middle-class households still do monthly kirana runs and use quick commerce \u201conly in urgency or being lazy\u201d; they scrutinise the bill and cancel if it feels high.","TVS Weekly comments","https://tvsweekly.substack.com/p/ordering-more-blinkit-than-zomato/comments"],
+["R09","Trust event · Jun 2024","TRUST","FSSAI raided a Blinkit warehouse in Telangana: unhygienic storage, expired food products, suspected infestation — widely covered, feeds category mistrust.","Wikipedia — Blinkit","https://en.wikipedia.org/wiki/Blinkit"],
+["R10","Field study · 2025","MISSION","Week-long rider-side study notes customer order frequency of 5–10/month, dominated by essentials and late-night snack missions.","Maybe Eureka case study","https://maybeeureka.substack.com/p/blinkit-zepto-case-study"],
+["R11","Market evidence · Apr 2026","MISSION","Eternal Q4 FY26: MTU doubled YoY (13.7M→27.2M) while net AOV stayed flat at \u20b9525 — growth from more frequent, smaller repeat orders, not bigger baskets.","Entrackr — Eternal Q4 FY26","https://entrackr.com/analysis/eternals-reality-check-blinkits-thin-margins-and-districts-losses-11777148"],
+["R12","Market evidence · Jul 2026","BUSINESS","Blinkit's first profit was 0.3% of order value vs its 5–6% target; higher-value baskets are among the few levers left — hence the premium \u201cGourmet\u201d launch.","Medianama — Gourmet","https://www.medianama.com/2026/07/223-why-blinkit-premium-groceries-gourmet/"],
+["R13","Market evidence · Apr 2026","BUSINESS","Eternal expects Blinkit NOV to grow 60%+ CAGR over three years, driven explicitly by assortment expansion, geographic rollout and demand density.","IndianStartupNews — Q4 FY26","https://indianstartupnews.com/news/a-full-picture-of-eternals-q4-fy26-results-from-blinkit-to-zomato-and-beyond-11775239"],
+["R14","Market evidence · 2026","BREAKOUT","Grocery & staples hold 61.3% of India's quick-commerce market (2025); electronics & accessories is the fastest-growing category (17.8% CAGR to 2031).","Mordor Intelligence","https://www.mordorintelligence.com/industry-reports/q-commerce-industry-in-india"],
+["R15","Market evidence · Mar 2026","BREAKOUT","BPC grew from ~2.8% of q-commerce GMV in CY22 to ~8.5% in CY25 — now the #2 category; q-commerce is ~16% of all online BPC spend.","Redseer — BPC in Q-commerce","https://redseer.com/articles/beauty-personal-care-in-quick-commerce/"],
+["R16","Market evidence · Nov 2025","BREAKOUT","Redseer projects existing users to spend ~20% more, driven by trust & habit formation and experimentation with beauty, home decor, gifting.","Redseer — Q-Commerce Ascent","https://redseer.com/articles/indias-q-commerce-ascent-a-new-era-in-shopping/"],
+["R17","Market evidence · Jan 2026","MISSION","Redseer: as the q-commerce habit solidifies, users shift from impulse to intentional, planned purchases; platforms push larger baskets and high-ASP SKUs.","Redseer — Quicker Decisions","https://redseer.com/articles/quick-commerce-quicker-decisions-is-your-brand-strategy-future-ready/"],
+["R18","Market evidence · Mar 2025","BREAKOUT","Bain: Gen Z is 40% of India's e-retail shoppers with 1.5x spend share on lifestyle, beauty and electronics — the natural first segment for expansion.","Bain — How India Shops Online 2025","https://www.bain.com/insights/how-india-shops-online-2025/"],
+["R19","User voice · Feb 2026","TRUST","₹429 paid for masala dry fruit; a different product arrived. Support admitted the mistake yet refused refund because the pack was opened — offering ₹10 cashback instead.","Consumer Court Advisor — thread 4374","https://consumercourt.net/threads/complaint-against-blinkit-for-wrong-product-delivery-and-denial-of-refund-replacement.4374/"],
+["R20","User voice · 2026","TRUST","Mushrooms arrived with a rubbery, stretchy texture; the call centre said they were “helpless” to take the product back.","ConsumerComplaints.in — Blinkit","https://www.consumercomplaints.in/bycompany/blinkit-a616132.html"],
+["R21","User voice · 2026","TRUST","A shoes return was rejected because the tag thread was opened — the only way to check the fit. A first non-grocery trial ends in a dispute.","ConsumerComplaints.in — Blinkit","https://www.consumercomplaints.in/bycompany/blinkit-a616132.html"],
+["R22","User voice · Aug 2025","TRUST","A ghee jar carried visible fungal growth alongside a printed-expiry mismatch.","ConsumerComplaints.in — Blinkit","https://www.consumercomplaints.in/bycompany/blinkit-a616132.html"],
+["R23","User voice · 2026","TRUST","Damaged tea pack; refund promised in 4–5 days was still unpaid after 15. A self-described regular customer says they stopped using the app.","Trustpilot — Blinkit reviews","https://www.trustpilot.com/review/blinkit.nl"],
+["R24","User voice · Feb 2026","TRUST","Order arrived with missing items and rotten produce; repeated redeliveries were assigned to an agent whose behaviour made the customer feel unsafe.","MouthShut — Blinkit review","https://www.mouthshut.com/review/blinkit-review-plospulsrop"],
+["R25","User voice · Dec 2024","TRUST","A gift bag and chocolate arrived damaged; refund was refused — the customer was told to “give feedback” instead. A gifting-category trial punished.","MouthShut — Blinkit review","https://www.mouthshut.com/review/blinkit-review-lotnrmrrtnp"],
+["R26","Review aggregate · 2026","TRUST","Across 5,694 reviews Blinkit averages 1.5 stars and only 20% would recommend; refunds, wrong items and spoiled products are the recurring themes.","PissedConsumer — Blinkit aggregate","https://blinkit.pissedconsumer.com/review.html"],
+["R27","User voice · Apr 2026","TRUST","A power bank arrived used/defective; a separate sealed-box order arrived empty and the refund request was rejected.","Consumer Court Advisor — Blinkit thread","https://consumercourt.net/threads/blinkit.1384/"],
+["R28","Market evidence · Jun 2026","MISSION","Analyst view: the pandemic pushed first grocery orders online and the habit stuck — quick-commerce demand is now habitual, essentials-led buying.","Pocketful — Blinkit vs Zepto analysis","https://www.pocketful.in/blog/blinkit-vs-zepto/"],
+["R29","Company signal · 2026","BUSINESS","Blinkit's own App Store listing now headlines a “Beauty & skincare store” with luxury brands — the company is actively pushing customers beyond grocery.","Apple App Store — Blinkit listing","https://apps.apple.com/us/app/-/id960335206"],
+["S01","Primary survey \u00b7 Aug 2026","TRUST","18–24, Bengaluru, 3–5 orders/month · last order: Dosa batter (sudden craving) · incident: Yes, Wrong item · avoids: Baby care · would be unlocked by: Clear expiry / freshness info on the product page, Real customer ratings & photo","Verified survey respondent P1 (consented)",null],
+["S02","Primary survey \u00b7 Aug 2026","TRUST","18–24, Chennai, 3–5 orders/month · last order: Groceries (weekly restock) · incident: Yes, I ordered detergent powder of 6kg a branded one(ariel) but delivered was a total wrong one. We tried to contact and return but nothing changed. · avoids: Electronics & accessories · would be unlocked by: Clear expiry / freshness info on the product page, Easy, no-questions-asked retu","Verified survey respondent P2 (consented)",null],
+["S03","Primary survey \u00b7 Aug 2026","TRUST","18–24, Kurnool, 3–5 orders/month · last order: Maggi, chocolate,yogurt,drinks ( mogu mo (sudden craving) · incident: I once received vegetables with an insect inside, which was disappointing. Since then, I don't fully trust the freshness of fruits and vegetables from · avoids: Pet supplies, Kitchen & home tools · would be unlocked by: Clear expiry / freshness info on the product page, Real customer ratings & photo","Verified survey respondent P3 (consented)",null],
+["S04","Primary survey \u00b7 Aug 2026","TRUST","35–44, Tellapur, More than 10 orders/month · last order: Veggies (ran out of something) · avoids: Electronics & accessories · would be unlocked by: Real customer ratings & photos","Verified survey respondent P4 (consented)",null],
+["S05","Primary survey \u00b7 Aug 2026","TRUST","18–24, Bengaluru, 3–5 orders/month · last order: wet wipes, razor, body wash (ran out of something) · avoids: Pet supplies, Baby care, Electronics & accessories · would be unlocked by: Clear expiry / freshness info on the product page, Real customer ratings & photo","Verified survey respondent P5 (consented)",null],
+["S06","Primary survey \u00b7 Aug 2026","TRUST","18–24, Chennai, 6–10 orders/month · last order: Ice cream, snacks (ran out of something) · incident: Most of the time, I got melted ice cream. Even when I tried to return or get a refund, customer service was often busy and would say they'd get back t · avoids: Beauty / skincare, Electronics & accessories · would be unlocked by: Clear expiry / freshness info on the product page, Real customer ratings & photo","Verified survey respondent P6 (consented)",null],
+["S07","Primary survey \u00b7 Aug 2026","TRUST","18–24, Chennai, 1–2 orders/month · last order: Rice, Crystal salt, some snacks (ran out of something) · incident: Yeah sometimes it disappointed with wrong items · avoids: Beauty / skincare, Electronics & accessories · would be unlocked by: Real customer ratings & photos","Verified survey respondent P7 (consented)",null],
+["S08","Primary survey \u00b7 Aug 2026","MISSION","18–24, Chennai, 6–10 orders/month · last order: Wild stone perfume (sudden craving) · avoids: Honestly, I'd try anything · would be unlocked by: Easy, no-questions-asked returns, Real customer ratings & photos","Verified survey respondent P8 (consented)",null],
+["S09","Primary survey \u00b7 Aug 2026","TRUST","25–34, Coimbatore, 3–5 orders/month · last order: cold drink , kids toy gift (guests / an occasion) · avoids: Baby care, Gifts / festive items · would be unlocked by: Easy, no-questions-asked returns, Small trial packs under ₹100–250","Verified survey respondent P9 (consented)",null],
+["S10","Primary survey \u00b7 Aug 2026","TRUST","18–24, Chennai, 1–2 orders/month · last order: Pepsi (just browsing) · incident: Quality, wrong iteam, refund trouble · avoids: Honestly, I'd try anything · would be unlocked by: Easy, no-questions-asked returns","Verified survey respondent P10 (consented)",null],
+["S11","Primary survey \u00b7 Aug 2026","TRUST","25–34, Chennai, 1–2 orders/month · last order: The product is unavailable where I am. (ran out of something) · incident: The fungus bread · avoids: Honestly, I'd try anything · would be unlocked by: Real customer ratings & photos, A big first-time discount, Nothing — I wouldn't","Verified survey respondent P11 (consented)",null],
+["S12","Primary survey \u00b7 Aug 2026","TRUST","25–34, Noida, Uttar Pradesh, 6–10 orders/month · last order: Pulses for sprout 4 kind (ran out of something) · incident: I ordered few medicine using net meds, while I was travelling. I got the expired and damaged product. · avoids: Beauty / skincare, Gourmet snacks or beverages · would be unlocked by: Clear expiry / freshness info on the product page, Small trial packs under ₹100–","Verified survey respondent P12 (consented)",null],
+["S13","Primary survey \u00b7 Aug 2026","MISSION","18–24, Vadodara, 1–2 orders/month · last order: Snacks (ran out of something) · avoids: Pet supplies · would be unlocked by: Real customer ratings & photos","Verified survey respondent P13 (consented)",null],
+["S14","Primary survey \u00b7 Aug 2026","TRUST","18–24, Hyderabad, 6–10 orders/month · last order: Butter,chocolate (ran out of something) · incident: Yes so many times · avoids: Honestly, I'd try anything · would be unlocked by: Clear expiry / freshness info on the product page, Real customer ratings & photo","Verified survey respondent P14 (consented)",null]];
+let recs=SEED.map(r=>({id:r[0],kind:r[1],theme:r[2],text:r[3],src:r[4],url:r[5]}));
+let filter=null;
+const $=id=>document.getElementById(id);
+function go(v){document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t.dataset.v===v));["dash","corpus","cls","ask"].forEach(x=>$("v-"+x).classList.toggle("hide",x!==v));if(v==="dash")renderDash();if(v==="corpus")renderCorpus();}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>go(t.dataset.v));
+function counts(){const c={};Object.keys(THEMES).forEach(t=>c[t]=0);recs.forEach(r=>{if(c[r.theme]!==undefined)c[r.theme]++});return c;}
+function renderSub(){$("subline").textContent=`${recs.length} records · 43 records · 29 source-linked public signals + 14 verified primary-survey respondents (Aug 2026)`;}
+function renderDash(){const c=counts(),mx=Math.max(...Object.values(c),1);
+$("v-dash").innerHTML=`<div class="card"><div class="hd">What the evidence says — records per theme</div><div class="mut" style="margin:2px 0 10px">Click a bar to filter the corpus. Counts update live as you classify new reviews.</div>
+${Object.entries(THEMES).map(([k,[l,col]])=>`<div class="trow" onclick="filter='${k}';go('corpus')"><div class="l"><span style="font-weight:600">${l}</span><b style="color:${col}">${c[k]}</b></div><div class="bar"><i style="width:${c[k]/mx*100}%;background:${col}"></i></div></div>`).join("")}
+<div class="note"><b>Reading:</b> trust dominates both methods — the public record and the 14 verified survey respondents (S01–S14) independently converge on it, while market evidence proves categories break out once trust forms (BPC: 2.8% → 8.5% of GMV). The blocker is risk, not appetite.</div></div>`;}
+function renderCorpus(){const shown=filter?recs.filter(r=>r.theme===filter):recs;
+$("v-corpus").innerHTML=(filter?`<button class="tab on clr" onclick="filter=null;renderCorpus()">✕ Clear filter: ${THEMES[filter][0]}</button>`:"")+shown.map(r=>`<div class="rec"><span class="pill" style="background:${THEMES[r.theme][1]}">${r.id}</span> <span class="mut" style="font-weight:700">${r.kind}</span><p>${r.text}</p><div class="src">${r.url?`<a href="${r.url}" target="_blank" rel="noreferrer">${r.src} ↗</a>`:r.src}</div></div>`).join("");}
+// ——— on-device classifier (portable prototype) ———
+const RULES=[[/expir|stale|rotten|filth|hygien|fake|authentic|refund|return|replace|damag|spoil|quality|old stock|fungus|accountab/i,"TRUST"],[/fee|surge|charge|price|expensive|costly|hidden|pointless|overpri/i,"PRICE"],[/same|always|every week|list|routine|usual|only order|repeat|habit/i,"MISSION"],[/tried|first time|new|whim|discover|explor|surprised|never bought.*until/i,"BREAKOUT"],[/margin|profit|aov|revenue|gmv|business/i,"BUSINESS"],[/love|great|amazing|convenient|lifesaver|fast|perfect/i,"POSITIVE"]];
+function tagLine(t){for(const[rx,th]of RULES){if(rx.test(t))return th;}return "MISSION";}
+function classify(){const lines=$("pasteBox").value.split("\n").map(s=>s.trim()).filter(s=>s.length>10);if(!lines.length)return;
+lines.forEach((t,i)=>{recs.push({id:"U"+String(recs.length+1).padStart(2,"0"),kind:"Pasted review · live",theme:tagLine(t),text:t,src:"User-pasted review (classified on-device)",url:null});});
+$("pasteBox").value="";renderSub();go("dash");}
+// ——— evidence search ———
+const STOP=new Set("what which who why how does do is are the a an on in of for from to with about users user blinkit and or their there this that".split(" "));
+function ask(){const q=$("qBox").value.trim();if(q.length<4)return;
+const kws=q.toLowerCase().replace(/[^a-z0-9\s]/g," ").split(/\s+/).filter(w=>w.length>2&&!STOP.has(w));
+const syn={beauty:["bpc","personal","care","face"],trust:["expiry","quality","refund","authentic","filth"],blocks:["avoid","never","risk"],category:["aisle","breakout"],fees:["fee","price","charge"],habit:["mission","repeat","routine"]};
+let expand=[...kws];kws.forEach(k=>{if(syn[k])expand=expand.concat(syn[k]);});
+const scored=recs.map(r=>{const hay=(r.text+" "+THEMES[r.theme][0]+" "+r.kind).toLowerCase();let s=0;expand.forEach(k=>{if(hay.includes(k))s++;});return[s,r];}).filter(x=>x[0]>0).sort((a,b)=>b[0]-a[0]).slice(0,4);
+const box=$("ansBox");
+if(!scored.length){box.innerHTML=`<div class="ans">The corpus doesn't cover that directly — try keywords like trust, expiry, fees, habit, beauty, or breakout.</div>`;return;}
+const ids=scored.map(x=>`[${x[1].id}]`).join(" ");
+box.innerHTML=`<div class="ans"><b>Most relevant evidence ${ids}:</b>\n\n${scored.map(x=>`[${x[1].id}] ${x[1].text}`).join("\n\n")}</div>`;}
+renderSub();renderDash();
+</script></body></html>
